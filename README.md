@@ -10,11 +10,8 @@ Full development is under process, but basic GCS functionalities should work.
 Go to the directory UI_Release\NavSys-GCS\NAV_SYS_Demo\nav_sys_release and run nav_sys.exe.
 Map may be not work because of google map dependency... woking on it.
 
-
-
-
-
-
+**************************************************************************************************************
+**************************************************************************************************************
 
 ![alt text](https://github.com/Saikat6-eng/NavSys-GCS/blob/main/NAV_SYS_Demo/Capture1.PNG)
 ![alt text](https://github.com/Saikat6-eng/NavSys-GCS/blob/main/NAV_SYS_Demo/Capture2.PNG)

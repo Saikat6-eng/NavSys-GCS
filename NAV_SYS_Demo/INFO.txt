@@ -1,0 +1,218 @@
+
+//flight modes
+#define Stabilize     0x00
+#define Altitude_hold 0x01
+#define Position_hold 0x02
+#define Loiter_mode   0x04
+#define RTL_mode      0x08
+#define AUTO_takeoff  0x10
+#define AUTO_land     0x20
+#define Circle_mode   0x40
+#define Mission_mode  0x80
+
+//msg ids
+#define msg_HB       (uint8_t)0
+#define msg_Telm     (uint8_t)1
+#define msg_string   (uint8_t)2
+//req msg
+#define req_msg_RAW  (uint8_t)5
+#define req_msg_CAL  (uint8_t)6
+#define req_msg_PID  (uint8_t)7
+#define req_msg_CTL  (uint8_t)8
+#define req_msg_IF   (uint8_t)9
+#define req_msg_SYS  (uint8_t)10
+#define req_msg_NAV  (uint8_t)11
+//set msg
+#define Gain_PID 	 (uint8_t)12
+#define Ctrl_CFG 	 (uint8_t)13
+#define Init_CFG     (uint8_t)14
+#define CAL_Mag      (uint8_t)15
+#define CAL_Accl 	 (uint8_t)16
+#define CAL_Gyro 	 (uint8_t)17
+#define CAL_Esc 	 (uint8_t)18
+#define CAL_Rct 	 (uint8_t)19
+#define GCS_RC    	 (uint8_t)20
+#define F_mode       (uint8_t)21
+#define Map_home     (uint8_t)22
+#define NAV_wp       (uint8_t)23
+#define MAN_arm      (uint8_t)24
+#define Pre_flight   (uint8_t)25
+#define CMD_gpio     (uint8_t)26
+#define CMD_discrete (uint8_t)27
+#define CMD_drop     (uint8_t)28
+#define CMD_spray    (uint8_t)29
+#define CMD_Here     (uint8_t)30
+#define CMD_reboot   (uint8_t)31
+
+//arm modes
+#define ARM_Not      (uint8_t)0x00
+#define ARM_Normal   (uint8_t)0x01
+#define ARM_Auto     (uint8_t)0x02
+
+//errors ids
+#define NO_GPS          (uint8_t)0x01
+#define OV_speed        (uint8_t)0x02
+#define BAT_low         (uint8_t)0x04
+#define OV_amp          (uint8_t)0x08
+#define Sens_fault      (uint8_t)0x10
+#define Sys_fault       (uint8_t)0x20
+#define NO_home_pos     (uint8_t)0x40
+#define Bus_fault       (uint8_t)0x80
+
+#define frame_startID (uint16_t)0xE373
+#define frame_end   (uint8_t)0xFF
+
+//CRC16 bit implimentation
+static const unsigned short crc16_val[256] = {
+                                0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
+                                0x8108,0x9129,0xa14a,0xb16b,0xc18c,0xd1ad,0xe1ce,0xf1ef,
+                                0x1231,0x0210,0x3273,0x2252,0x52b5,0x4294,0x72f7,0x62d6,
+                                0x9339,0x8318,0xb37b,0xa35a,0xd3bd,0xc39c,0xf3ff,0xe3de,
+                                0x2462,0x3443,0x0420,0x1401,0x64e6,0x74c7,0x44a4,0x5485,
+                                0xa56a,0xb54b,0x8528,0x9509,0xe5ee,0xf5cf,0xc5ac,0xd58d,
+                                0x3653,0x2672,0x1611,0x0630,0x76d7,0x66f6,0x5695,0x46b4,
+                                0xb75b,0xa77a,0x9719,0x8738,0xf7df,0xe7fe,0xd79d,0xc7bc,
+                                0x48c4,0x58e5,0x6886,0x78a7,0x0840,0x1861,0x2802,0x3823,
+                                0xc9cc,0xd9ed,0xe98e,0xf9af,0x8948,0x9969,0xa90a,0xb92b,
+                                0x5af5,0x4ad4,0x7ab7,0x6a96,0x1a71,0x0a50,0x3a33,0x2a12,
+                                0xdbfd,0xcbdc,0xfbbf,0xeb9e,0x9b79,0x8b58,0xbb3b,0xab1a,
+                                0x6ca6,0x7c87,0x4ce4,0x5cc5,0x2c22,0x3c03,0x0c60,0x1c41,
+                                0xedae,0xfd8f,0xcdec,0xddcd,0xad2a,0xbd0b,0x8d68,0x9d49,
+                                0x7e97,0x6eb6,0x5ed5,0x4ef4,0x3e13,0x2e32,0x1e51,0x0e70,
+                                0xff9f,0xefbe,0xdfdd,0xcffc,0xbf1b,0xaf3a,0x9f59,0x8f78,
+                                0x9188,0x81a9,0xb1ca,0xa1eb,0xd10c,0xc12d,0xf14e,0xe16f,
+                                0x1080,0x00a1,0x30c2,0x20e3,0x5004,0x4025,0x7046,0x6067,
+                                0x83b9,0x9398,0xa3fb,0xb3da,0xc33d,0xd31c,0xe37f,0xf35e,
+                                0x02b1,0x1290,0x22f3,0x32d2,0x4235,0x5214,0x6277,0x7256,
+                                0xb5ea,0xa5cb,0x95a8,0x8589,0xf56e,0xe54f,0xd52c,0xc50d,
+                                0x34e2,0x24c3,0x14a0,0x0481,0x7466,0x6447,0x5424,0x4405,
+                                0xa7db,0xb7fa,0x8799,0x97b8,0xe75f,0xf77e,0xc71d,0xd73c,
+                                0x26d3,0x36f2,0x0691,0x16b0,0x6657,0x7676,0x4615,0x5634,
+                                0xd94c,0xc96d,0xf90e,0xe92f,0x99C8,0x89e9,0xb98a,0xa9ab,
+                                0x5844,0x4865,0x7806,0x6827,0x18c0,0x08e1,0x3882,0x28a3,
+                                0xcb7d,0xdb5c,0xeb3f,0xfb1e,0x8bf9,0x9bd8,0xabbb,0xbb9a,
+                                0x4a75,0x5a54,0x6a37,0x7a16,0x0af1,0x1ad0,0x2ab3,0x3a92,
+                                0xfd2e,0xed0f,0xdd6c,0xcd4d,0xbdaa,0xad8b,0x9de8,0x8dc9,
+                                0x7c26,0x6c07,0x5c64,0x4c45,0x3ca2,0x2c83,0x1ce0,0x0cc1,
+                                0xef1f,0xff3e,0xcf5d,0xdf7c,0xaf9b,0xbfba,0x8fd9,0x9ff8,
+                                0x6e17,0x7e36,0x4e55,0x5e74,0x2e93,0x3eb2,0x0ed1,0x1ef0};
+
+
+uint16_t Telemetry::Get_CRC16(const uint8_t *buf, uint16_t len)
+{
+    uint16_t count;
+    uint16_t crc=0;
+
+    for(count = 0; count<len; count++)
+        crc = (crc<<8)^crc16_val[((crc>>8)^*buf++)&0x00FF];
+
+    return crc;
+}
+
+//msg frame//
+//all data type is in unsigned
+---Header---|---type---|---len---|-----data-----|---crc---|---msg_end---
+   <2byte>    <1byte>    <1byte>  <max-256byte>   <2byte>    <1byte>
+
+//main telemetry data
+typedef struct f_
+{
+    float latitude,longitude,Home_distance,Home_bearing; //16
+    float altitude_cur,pressure;                         //8
+    float Speed_vartical,Speed_horizontal,Speed_air;     //12
+    float rate_gyro[3];                                  //12
+    short accl_r,accl_z;                               //4
+    short angles[3];                                   //6
+    short H_Dev,Aoa;                                   //4
+    short eng_temp[2],temp;                            //6
+    short set_points[5],V,I;                           //14
+    short serface_deflection[4];                       //8
+    short oil_pres[2],oil_temp[2];                     //8
+    unsigned short humidity;                           //2
+    unsigned short eng_rpm[2];                         //4
+    unsigned short ballast_lvl[6];                     //12
+    unsigned short sat_count;                          //2
+    unsigned short V_Bat[3],I_Bat[3];                  //12
+    unsigned char flight_mode;                         //1
+    unsigned char is_arm;                              //1
+    unsigned char valid_flag;                          //1
+}f_data;
+
+//calibrtion data
+typedef struct
+{
+    float A_bias[3],G_bias[3],M_bias[3];	//36
+    unsigned short Cal_rc_min[8];
+    unsigned short Cal_rc_max[8];
+}Calibration;
+
+//init data
+typedef struct init
+{
+    unsigned char control_bits;
+    unsigned char telemetry1_rate;
+    unsigned char telemetry2_rate;
+    unsigned short baud_can1;
+    unsigned short baud_can2;
+    unsigned int telemetry1_baud;
+    unsigned int telemetry2_baud;
+}struct_init;
+
+//PID data
+typedef struct
+{
+    float PI_sroll[2];
+    float PI_spitch[2];
+    float PI_syaw[2];   //24 byte
+
+    float PID_Rroll[3];
+    float PID_Rpitch[3];
+    float PID_Ryaw[3];  //36 byte
+
+    float PID_alt[3];
+    float PID_pos[3];
+    float PID_nav[3];  //36
+}struct_PID;
+
+//control data
+typedef struct
+{
+    float rate_Vspd;
+    float rate_Hspd;
+    float rate_RC;
+    float rate_turn;
+    float rate_pos;     //20 byte
+    short s_div;
+}struct_control;
+
+//raw data
+typedef struct
+{
+    float gyro[3];
+    float accl[3];
+    float mag[3];
+    int16_t adc[6];
+    int16_t pwm_us[6];
+}struct_raw;
+
+//gcs input data
+typedef struct
+{
+    int16_t primary[6];
+    uint8_t aux[6];
+    uint8_t discreat;
+}struct_input; //19
+
+//Waypoint data
+struct wp{
+    unsigned char wp_index;         //1
+    unsigned char flags;			//1
+    double target_lat,target_lon;   //16
+    unsigned short target_hed,target_distance;
+    short target_alt,target_speed;  //8
+};
+
+
+
+
+ 
